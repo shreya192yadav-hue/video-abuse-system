@@ -1,1 +1,300 @@
 
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#050816">
+  <title>Video Abuse Detection AI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <header class="topbar">
+      <button class="brand-icon" id="menuButton" aria-label="Menu">◈</button>
+      <div class="brand">
+        <h1>VIDEO<span>GUARD</span> AI</h1>
+        <p>VIDEO ABUSE DETECTION SYSTEM</p>
+      </div>
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span id="systemStatus">SYSTEM READY</span>
+      </div>
+    </header>
+
+    <nav class="nav-tabs" aria-label="Main navigation">
+      <button class="nav-btn active" data-page="dashboard">⌂ Dashboard</button>
+      <button class="nav-btn" data-page="cases">▤ Case History</button>
+      <button class="nav-btn" data-page="settings">⚙ Settings</button>
+    </nav>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section class="page active" id="dashboard">
+        <div class="welcome">
+          <div>
+            <p class="eyebrow">AI INVESTIGATION WORKSPACE</p>
+            <h2>नमस्ते, <span>Investigator</span></h2>
+            <p class="muted">वीडियो की तुलना करें, संभावित बदलाव जाँचें और रिपोर्ट तैयार करें।</p>
+          </div>
+          <div class="scan-emblem" aria-hidden="true">
+            <div class="emblem-ring">◈</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-icon">▣</span>
+            <p>कुल केस</p>
+            <strong id="totalCases">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon purple">⌕</span>
+            <p>जाँचे गए वीडियो</p>
+            <strong id="scannedCases">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon green">✓</span>
+            <p>रिपोर्ट तैयार</p>
+            <strong id="reportCases">0</strong>
+          </article>
+        </div>
+
+        <section class="panel scanner-panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">VIDEO FORENSICS</p>
+              <h3>वीडियो स्कैनर</h3>
+            </div>
+            <span class="chip">LOCAL ANALYSIS</span>
+          </div>
+
+          <p class="muted small">
+            मूल वीडियो और संदिग्ध वीडियो चुनें। सिस्टम दोनों की तुलना करके
+            प्रारंभिक जाँच रिपोर्ट बनाएगा।
+          </p>
+
+          <form id="scanForm">
+            <div class="upload-grid">
+              <label class="upload-box" for="originalVideo">
+                <span class="upload-symbol">＋</span>
+                <strong>मूल वीडियो</strong>
+                <span class="muted small">Original / Reference</span>
+                <span class="file-name" id="originalName">वीडियो चुनें</span>
+                <input id="originalVideo" name="original_video"
+                       type="file" accept="video/*" required>
+              </label>
+
+              <label class="upload-box suspect" for="suspectVideo">
+                <span class="upload-symbol">⌕</span>
+                <strong>संदिग्ध वीडियो</strong>
+                <span class="muted small">Suspected / Edited</span>
+                <span class="file-name" id="suspectName">वीडियो चुनें</span>
+                <input id="suspectVideo" name="suspect_video"
+                       type="file" accept="video/*" required>
+              </label>
+            </div>
+
+            <div class="field-group">
+              <label for="caseTitle">केस का नाम</label>
+              <input id="caseTitle" name="title" type="text"
+                     maxlength="120" placeholder="जैसे: संदिग्ध वीडियो जाँच">
+            </div>
+
+            <div class="field-group">
+              <label for="videoDescription">शिकायत / संदिग्ध बदलाव का विवरण</label>
+              <textarea id="videoDescription" name="description" rows="3"
+                placeholder="बताएँ कि वीडियो में क्या बदलाव, आवाज़ या कैप्शन संदिग्ध है..."></textarea>
+            </div>
+
+            <div class="field-group">
+              <label for="sourceUrl">मूल वीडियो का लिंक (वैकल्पिक)</label>
+              <input id="sourceUrl" name="source_url" type="url"
+                     placeholder="https://...">
+            </div>
+
+            <div class="field-group">
+              <label for="suspectUrl">संदिग्ध वीडियो का लिंक (वैकल्पिक)</label>
+              <input id="suspectUrl" name="suspect_url" type="url"
+                     placeholder="https://...">
+            </div>
+
+            <div class="form-actions">
+              <button class="primary-btn" id="scanButton" type="submit">
+                <span>⌕</span> वीडियो स्कैन करें
+              </button>
+              <button class="secondary-btn" id="resetButton" type="reset">
+                साफ करें
+              </button>
+            </div>
+          </form>
+
+          <div class="progress-wrap" id="progressWrap" hidden>
+            <div class="progress-heading">
+              <span id="progressText">वीडियो की जाँच हो रही है...</span>
+              <span class="loading-spinner"></span>
+            </div>
+            <div class="progress-track"><div class="progress-bar"></div></div>
+          </div>
+
+          <div id="scanMessage" class="message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel result-panel" id="resultPanel" hidden>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">ANALYSIS OUTPUT</p>
+              <h3>स्कैन रिपोर्ट</h3>
+            </div>
+            <span class="chip green-chip">COMPLETE</span>
+          </div>
+          <div id="resultContent"></div>
+          <div class="form-actions">
+            <button class="primary-btn" id="downloadReport" type="button">
+              ↓ रिपोर्ट डाउनलोड करें
+            </button>
+            <button class="secondary-btn" id="copyReport" type="button">
+              रिपोर्ट कॉपी करें
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">RECENT ACTIVITY</p>
+              <h3>हाल के केस</h3>
+            </div>
+            <button class="text-btn" data-goto="cases">सभी देखें →</button>
+          </div>
+          <div id="recentCases" class="case-list">
+            <p class="muted">केस लोड हो रहे हैं...</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- CASE HISTORY -->
+      <section class="page" id="cases">
+        <section class="page-heading">
+          <p class="eyebrow">INVESTIGATION RECORDS</p>
+          <h2>केस हिस्ट्री</h2>
+          <p class="muted">पहले किए गए वीडियो स्कैन और उपलब्ध रिपोर्ट देखें।</p>
+        </section>
+        <section class="panel">
+          <div class="section-heading">
+            <h3>सभी केस</h3>
+            <button class="secondary-btn compact" id="refreshCases">↻ Refresh</button>
+          </div>
+          <div id="allCases" class="case-list">
+            <p class="muted">केस लोड हो रहे हैं...</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="page" id="settings">
+        <section class="page-heading">
+          <p class="eyebrow">SYSTEM CONFIGURATION</p>
+          <h2>Settings & Connections</h2>
+          <p class="muted">डैशबोर्ड की प्राथमिकताएँ और भविष्य के इंटीग्रेशन।</p>
+        </section>
+
+        <section class="panel">
+          <h3>सिस्टम सेटिंग्स</h3>
+          <div class="field-group">
+            <label for="appName">ऐप का नाम</label>
+            <input id="appName" type="text" maxlength="50"
+                   value="VideoGuard AI">
+          </div>
+          <div class="field-group">
+            <label for="language">रिपोर्ट की भाषा</label>
+            <select id="language">
+              <option value="hi">हिंदी</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="apiProvider">AI Provider</label>
+            <select id="apiProvider">
+              <option value="none">अभी कनेक्ट नहीं है</option>
+              <option value="gemini">Google Gemini</option>
+              <option value="openrouter">OpenRouter</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="apiKey">API Key</label>
+            <input id="apiKey" type="password" autocomplete="off"
+                   placeholder="API key (वैकल्पिक)">
+            <p class="muted small">
+              यह अभी केवल सेटिंग UI है। इस प्रोटोटाइप में API key से AI कनेक्शन
+              सक्रिय नहीं होता। असली उपयोग से पहले सुरक्षित सर्वर-साइड सेटअप जरूरी है।
+            </p>
+          </div>
+          <div class="field-group">
+            <label for="modelName">Model Name (वैकल्पिक)</label>
+            <input id="modelName" type="text" placeholder="Model ID">
+          </div>
+          <button class="primary-btn" id="saveSettings" type="button">
+            सेटिंग्स सेव करें
+          </button>
+          <p class="message" id="settingsMessage" role="status"></p>
+        </section>
+
+        <section class="panel">
+          <h3>Platform Connections</h3>
+          <p class="muted small">
+            TikTok या अन्य प्लेटफॉर्म पर रिपोर्ट जमा करने के लिए अधिकृत API,
+            OAuth अनुमति और प्लेटफॉर्म की शर्तें आवश्यक हो सकती हैं।
+            यह डैशबोर्ड अभी अपने-आप शिकायत सबमिट नहीं करता।
+          </p>
+          <div class="connection-row">
+            <div>
+              <strong>TikTok</strong>
+              <p class="muted small">Manual report preparation</p>
+            </div>
+            <span class="chip">NOT CONNECTED</span>
+          </div>
+          <div class="connection-row">
+            <div>
+              <strong>Cloud Storage</strong>
+              <p class="muted small">Integration pending</p>
+            </div>
+            <span class="chip">NOT CONNECTED</span>
+          </div>
+          <div class="connection-row">
+            <div>
+              <strong>Database</strong>
+              <p class="muted small">Current backend case storage</p>
+            </div>
+            <span class="chip green-chip">BASIC</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h3>हिंदी वॉइस</h3>
+          <p class="muted small">
+            आपके ब्राउज़र में वॉइस सुविधा उपलब्ध होने पर नीचे के बटन से जाँचें।
+          </p>
+          <div class="form-actions">
+            <button class="secondary-btn" id="speakButton" type="button">
+              🔊 आवाज़ जाँचें
+            </button>
+            <button class="secondary-btn" id="stopSpeech" type="button">
+              ■ आवाज़ रोकें
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>VIDEOGUARD AI</span>
+      <span>PRELIMINARY VIDEO COMPARISON · v1.0</span>
+    </footer>
+  </div>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
