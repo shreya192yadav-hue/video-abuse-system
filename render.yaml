@@ -1,1 +1,10 @@
 
+
+services:
+  - type: web
+    name: fast-video-abuse-system
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
